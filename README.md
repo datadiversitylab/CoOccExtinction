@@ -49,4 +49,4 @@ This repo has the following basic structure.
 
 ### Acknowledgment
 
-Initial project structure was created by https://github.com/dssg/hitchhikers-guide.git
+Initial project structure was created following the structure in [this repo](https://github.com/malill/research-template).
