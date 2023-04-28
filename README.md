@@ -10,6 +10,7 @@ The purpose of this project is _______.
 
 This repo has the following basic structure.
 
+```
 ├── environment.yml     <- Basic Python dependencies for Conda environment.
 ├── README.md           <- The top-level README for developers.
 │
@@ -43,7 +44,7 @@ This repo has the following basic structure.
 ├── src_py                    <- Python source code for use in this project.
 │
 ├── src_r                     <- R source code for use in this project.
-
+```
 
 
 ### Acknowledgment
