@@ -1,12 +1,14 @@
-# research-template :microscope:
+# DDL Lab Retreat 2025: Extinction Through the Lens of Co-Occurring Species
 
 ![version](https://img.shields.io/badge/version-1.0-blue) ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg) ![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)
 
-# Project Intro/Objective :mag:
+# Key Questions
 
-The purpose of this project is _______.
+- Given a community in which one or more species went extinct, why did other species in the community not go extinct?
+- How did land coverage change in this area?
+- What are the environmental factors that led to the extinction or survival of the species?
 
-# Remarks
+# Repo Structure
 
 This repo has the following basic structure.
 
