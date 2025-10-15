@@ -68,7 +68,7 @@ lapply(seq_along(css), function(t_cs){
     range_centroid_lat <- geom(centroid)[, "y"]
     
     # 4. EXTRACT RASTER VALUES WITHIN RANGE
-    # For percentage rasters (forest, cropland, urban, grassland)
+    # For percentage rasters (forest, cropland, urban)
     
     raster_values <- lapply(raster_list, function(y){
       range_raster1_pct <- mean(extract(y, target_sp, 
@@ -77,9 +77,10 @@ lapply(seq_along(css), function(t_cs){
     raster_vals <- data.frame(raster_values)
     
     raster_values_d <- lapply(seq_along(raster_list_d), function(y){
-      a <- mask(raster_list_d[[y]], target_sp)
-      a <- crop(a, target_sp)
-      val <- 100*expanse(a, unit = "km")[2] / expanse(target_sp, unit = "km")
+      
+      a <- crop(raster_list_d[[y]], target_sp)
+      a <- mask(a, target_sp)
+      val <- 100*expanse(a, unit = "km") / expanse(target_sp, unit = "km")
       names(val) <- names(raster_list_d)[y]
       val
     })
@@ -132,10 +133,8 @@ lapply(seq_along(css), function(t_cs){
       overlap_area_km2 = overlap_area_km2,
       overlap_pct_extinct_range = overlap_pct_extinct_range,
       overlap_pct_extant_range = overlap_pct_extant_range,
-      
       stringsAsFactors = FALSE
     )
-    
     return(result)
   })
   caseStudy <- do.call("rbind", caseStudy)
