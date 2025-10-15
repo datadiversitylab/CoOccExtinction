@@ -119,6 +119,8 @@ caseStudy <- lapply(seq_along(full_species), function(sp){
   return(result)
 })
 
+caseStudy <- do.call("rbind", caseStudy)
+
 write.csv(caseStudy, here("data", "case_studies", paste0("cs", case_study), "range.based.csv"))
 
 
