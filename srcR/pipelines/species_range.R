@@ -33,12 +33,13 @@ traits <- read.csv(here("data", "case_studies", paste0("cs", case_study), "trait
 
 full_species <- c(extant, extinct)
 
-lapply(seq_along(full_species), function(x){
+caseStudy <- lapply(seq_along(full_species), function(sp){
+  print(sp)
 
-  target_sp <- full_species[[x]]
+  target_sp <- full_species[[sp]]
   extinct_sp <- full_species[[length(full_species)]]
   
-  species_name <- sub(" ", "_",  full_species[[x]]$sciname[1])
+  species_name <- sub(" ", "_",  full_species[[sp]]$sciname[1])
   
   # 2. TRAITS (from traits CSV)
   trait_row <- traits %>% filter(species == species_name)
@@ -105,8 +106,8 @@ lapply(seq_along(full_species), function(x){
     # Range
     global_range_size_km2 = global_range_size_km2,
     global_range_size_log = global_range_size_log,
-    #range_centroid_lon = range_centroid_lon,
-    #range_centroid_lat = range_centroid_lat,
+    range_centroid_lon = mean(range_centroid_lon),
+    range_centroid_lat = mean(range_centroid_lat),
     raster_vals,
     overlap_area_km2 = overlap_area_km2,
     overlap_pct_extinct_range = overlap_pct_extinct_range,
@@ -117,6 +118,8 @@ lapply(seq_along(full_species), function(x){
   
   return(result)
 })
+
+write.csv(caseStudy, here("data", "case_studies", paste0("cs", case_study), "range.based.csv"))
 
 
 
