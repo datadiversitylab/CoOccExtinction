@@ -61,7 +61,6 @@ caseStudy <- lapply(1:nrow(full_species), function(sp){
   range_raster1_pct <- mean(extract(y, target_sp, 
                                fun = mean, na.rm = TRUE)[, 2])
   })
-  
   raster_vals <- data.frame(raster_values)
   
   # 5. CALCULATE OVERLAP WITH EXTINCT SPECIES
