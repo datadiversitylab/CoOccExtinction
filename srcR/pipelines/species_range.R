@@ -2,19 +2,19 @@ library(here)
 library(terra)
 library(dplyr)
 
-case_study <- 1
+case_study <- 0
 
 # Read in shapefiles
 shp_extinct <- list.files(here("data", "case_studies", paste0("cs", case_study), "extinct"),
                         pattern = "\\.shp$",
                         full.names = TRUE)
-extinct <- vect(shp_files)
+extinct <- vect(shp_extinct)
 
 shp_extant <- list.files(here("data", "case_studies", paste0("cs", case_study), "extant"),
                           pattern = "\\.shp$",
                           full.names = TRUE, 
                          recursive = TRUE)
-extant <- lapply(shp_extant, vect)
+extant <- vect(shp_extant)
 
 # Read in raster data
 rasters <- list.files(here("data", "spatial_data", "raster"),
@@ -23,23 +23,19 @@ rasters <- list.files(here("data", "spatial_data", "raster"),
 raster_list <- lapply(rasters, rast)
 names(raster_list) <- tools::file_path_sans_ext(basename(rasters))
 
-
 # Read in the trait dataset
-
-#traits <- read.csv(here("data", "case_studies", paste0("cs", case_study), "trait_test.csv"))
 traits <- read.csv(here("data", "case_studies", paste0("cs", case_study), "traits.csv"))
 
 # Construct dataset
-
-full_species <- c(extant, extinct)
-
-caseStudy <- lapply(seq_along(full_species), function(sp){
+full_species <- rbind(extant, extinct)
+caseStudy <- lapply(1:nrow(full_species), function(sp){
   print(sp)
 
-  target_sp <- full_species[[sp]]
-  extinct_sp <- full_species[[length(full_species)]]
+  target_sp <- full_species[sp]
+  extinct_sp <- full_species[length(full_species)]
+  species_name <- sub(" ", "_",  full_species[sp]$sci_name[1])
   
-  species_name <- sub(" ", "_",  full_species[[sp]]$sciname[1])
+  if(is.na(species_name)){species_name =  sub(" ", "_", extinct$SCI_NAME)}
   
   # 2. TRAITS (from traits CSV)
   trait_row <- traits %>% filter(species == species_name)
@@ -118,9 +114,7 @@ caseStudy <- lapply(seq_along(full_species), function(sp){
   
   return(result)
 })
-
 caseStudy <- do.call("rbind", caseStudy)
-
 write.csv(caseStudy, here("data", "case_studies", paste0("cs", case_study), "range.based.csv"))
 
 

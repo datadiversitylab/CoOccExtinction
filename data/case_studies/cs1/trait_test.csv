@@ -1,5 +1,0 @@
-﻿id,Order,Family,Genus,Species,habitat_breadth,diet_breadth,body_mass_kg,body_size_m,trophic_level,global_range_size_km2,extinct
-Anf0611,Anura,Bufonidae,Incilius,Incilius_campbelli,specialist,specialist,0.002,0.09,carnivore,62,0
-Anf3405,Anura,Leptodactylidae,Leptodactylus,Leptodactylus_melanonotus,generalist,specialist,0.03,0.058,carnivore,10,0
-Anf6115,Caudata,Plethodontidae,Bolitoglossa,Bolitoglossa_dofleini,generalist,specialist,0.1,0.232,carnivore,16,0
-Anf1299,Anura,Craugastoridae,Craugastor,Craugastor_omoaensis,generalist,specialist,0.01,0.03,carnivore,1,1
