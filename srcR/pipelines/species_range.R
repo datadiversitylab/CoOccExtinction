@@ -6,20 +6,20 @@ case_study <- 0
 
 # Read in shapefiles
 shp_extinct <- list.files(here("data", "case_studies", paste0("cs", case_study), "extinct"),
-                        pattern = "\\.shp$",
-                        full.names = TRUE)
+                          pattern = "\\.shp$",
+                          full.names = TRUE)
 extinct <- vect(shp_extinct)
 
 shp_extant <- list.files(here("data", "case_studies", paste0("cs", case_study), "extant"),
-                          pattern = "\\.shp$",
-                          full.names = TRUE, 
+                         pattern = "\\.shp$",
+                         full.names = TRUE, 
                          recursive = TRUE)
 extant <- vect(shp_extant)
 
 # Read in raster data
 rasters <- list.files(here("data", "spatial_data", "raster"),
-                         full.names = TRUE, 
-                         recursive = TRUE)
+                      full.names = TRUE, 
+                      recursive = TRUE)
 raster_list <- lapply(rasters, rast)
 names(raster_list) <- tools::file_path_sans_ext(basename(rasters))
 
@@ -30,7 +30,7 @@ traits <- read.csv(here("data", "case_studies", paste0("cs", case_study), "trait
 full_species <- rbind(extant, extinct)
 caseStudy <- lapply(1:nrow(full_species), function(sp){
   print(sp)
-
+  
   target_sp <- full_species[sp]
   extinct_sp <- full_species[length(full_species)]
   species_name <- sub(" ", "_",  full_species[sp]$sci_name[1])
@@ -58,8 +58,8 @@ caseStudy <- lapply(1:nrow(full_species), function(sp){
   # For percentage rasters (forest, cropland, urban, grassland)
   
   raster_values <- lapply(raster_list, function(y){
-  range_raster1_pct <- mean(extract(y, target_sp, 
-                               fun = mean, na.rm = TRUE)[, 2])
+    range_raster1_pct <- mean(extract(y, target_sp, 
+                                      fun = mean, na.rm = TRUE)[, 2])
   })
   raster_vals <- data.frame(raster_values)
   
