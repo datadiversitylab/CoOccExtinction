@@ -3,19 +3,18 @@ library(terra)
 library(dplyr)
 
 css <- list.dirs(here("data", "case_studies"), recursive = FALSE)
-css_n <- as.numeric(gsub("\\D", "", css))
 
-lapply(seq_along(css), function(t_cs){
+lapply(css, function(t_cs){
   
-  case_study <- css_n[t_cs]
+  case_study <- basename(css_n)
   
   # Read in shapefiles
-  shp_extinct <- list.files(here("data", "case_studies", paste0("cs", case_study), "extinct"),
+  shp_extinct <- list.files(here("data", "case_studies", case_study, "extinct"),
                             pattern = "\\.shp$",
                             full.names = TRUE)
   extinct <- vect(shp_extinct)
   
-  shp_extant <- list.files(here("data", "case_studies", paste0("cs", case_study), "extant"),
+  shp_extant <- list.files(here("data", "case_studies", case_study, "extant"),
                            pattern = "\\.shp$",
                            full.names = TRUE, 
                            recursive = TRUE)
@@ -37,7 +36,7 @@ lapply(seq_along(css), function(t_cs){
   
   
   # Read in the trait dataset
-  traits <- read.csv(here("data", "case_studies", paste0("cs", case_study), "traits.csv"))
+  traits <- read.csv(here("data", "case_studies", case_study, "traits.csv"))
   
   # Construct dataset
   full_species <- rbind(extant, extinct)
@@ -139,6 +138,6 @@ lapply(seq_along(css), function(t_cs){
   })
   caseStudy <- do.call("rbind", caseStudy)
   
-  dir.create(here("results", paste0("cs", case_study)))
-  write.csv(caseStudy, here("results", paste0("cs", case_study), "range.based.csv"))
+  dir.create(here("results", case_study))
+  write.csv(caseStudy, here("results", case_study, "range.based.csv"))
 })
