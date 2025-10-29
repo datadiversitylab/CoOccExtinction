@@ -89,6 +89,8 @@ for(study in css_n) {
   
   # Add extinct_species_group column
   PAM_df$extinct_species_group <- extinct$sciname
+  # Make sure that the extinct species names have underscores, not spaces
+  PAM_df$extinct_species_group <- sub(" ", "_", PAM_df$extinct_species_group)
   
   # RESTRUCTURE RESULT DATAFRAME
   # Need:
@@ -130,6 +132,12 @@ for(study in css_n) {
     }
   }
   
+  # Make all column names lowercase
+  colnames(PAM_final) <- tolower(colnames(PAM_final))
+  # Rename latitude and longitude columns
+  colnames(PAM_final)[1] <- "longitude"
+  colnames(PAM_final)[2] <- "latitude"
+  
   # With new CS naming convention, different numbers of zeros are needed
   # For 001-009
   if(study < 10){
@@ -137,14 +145,14 @@ for(study in css_n) {
     dir.create(here("results", paste0("CS_00", study)))
     
     # Write final CSV
-    write.csv(PAM_final, here("results", paste0("CS_00", study), "grid.based.csv"))
+    write.csv(PAM_final, here("results", paste0("CS_00", study), "grid.based.csv"), row.names = FALSE)
   } else {
     # For 010-099
     # Create results directory if it doesn't already exist
     dir.create(here("results", paste0("CS_0", study)))
     
     # Write final CSV
-    write.csv(PAM_final, here("results", paste0("CS_0", study), "grid.based.csv"))
+    write.csv(PAM_final, here("results", paste0("CS_0", study), "grid.based.csv"), row.names = FALSE)
   }
   
 }
