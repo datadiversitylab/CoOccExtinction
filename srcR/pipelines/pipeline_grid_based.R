@@ -21,48 +21,9 @@ css <- list.dirs(here("data", "case_studies"), recursive = FALSE)
 css_n <- as.numeric(gsub("\\D", "", css))
 
 # Read in raster data only once, since it won't change per study
-# First, continuous rasters
-rasters_c <- list.files(here("data", "spatial_data", "raster", "continuous"),
-                        full.names = TRUE, 
-                        recursive = TRUE)
-raster_list_c <- lapply(rasters_c, rast)
-# Apply file names to list
-names(raster_list_c) <- tools::file_path_sans_ext(basename(rasters_c))
-
-# Next, discrete rasters
-rasters_d <- list.files(here("data", "spatial_data", "raster", "discrete"),
-                        full.names = TRUE, 
-                        recursive = TRUE)
-raster_list_d <- lapply(rasters_d, rast)
-# Apply file names to list
-names(raster_list_d) <- tools::file_path_sans_ext(basename(rasters_d))
-
-# Create full raster stack to use with lets.addvar()
-raster_all <- c(raster_list_c, raster_list_d)
-
-# Make sure rasters can be stacked
-# Choose a raster to use as a reference for the rest
-ref <- raster_all[["global_elevation_worldclim_2.5arcmin"]]
-
-# Beyond ensuring the extents match, the rasters also need to have
-#  the same number of rows and columns (driven by spatial grain I think)
-# Use terra::resample to ensure that all geometries align
-
-for(i in c(1:length(raster_all))){
-  # If the layer is continuous, then the resampling method should be "bilinear"
-  # (The continuous rasters are the first n of raster_all, where n is the 
-  #  length of raster_list_c)
-  if(i <= length(raster_list_c)){
-    raster_all[[i]] <- resample(raster_all[[i]], ref, method = "bilinear")
-  } else {
-    # If the layer is discrete, then the resampling method should be "near"
-    raster_all[[i]] <- resample(raster_all[[i]], ref, method = "near")
-  }
-}
-
-# Finally, use terra::c() to collapse the transformed raster_all list
-#  into one SpatRaster for use with lets.addvar()
-raster_aligned <- reduce(raster_all, c)
+source(here("srcR", "misc", "stack_rasters.R"))
+# Don't worry, this takes a little while (~45 seconds)
+raster_aligned <- stack_rasters("global_elevation_worldclim_2.5arcmin")
 
 # For each case study:
 ## Read in extinct and extant shapefiles
@@ -71,20 +32,40 @@ raster_aligned <- reduce(raster_all, c)
 ## Add trait values
 for(study in css_n) {
   # Read in the trait dataset
-  traits <- read.csv(here("data", "case_studies", paste0("cs", study), "traits.csv"))
-  
-  # Read extinct shapefile
-  shp_extinct <- list.files(here("data", "case_studies", paste0("cs", study), "extinct"),
-                            pattern = "\\.shp$",
-                            full.names = TRUE)
-  extinct <- vect(shp_extinct)
-  
-  # Read in extant shapefile
-  shp_extant <- list.files(here("data", "case_studies", paste0("cs", study), "extant"),
-                           pattern = "\\.shp$",
-                           full.names = TRUE, 
-                           recursive = TRUE)
-  extant <- vect(shp_extant)
+  # With new CS naming convention, different numbers of zeros are needed
+  # For 001-009
+  if(study < 10){
+    traits <- read.csv(here("data", "case_studies", paste0("CS_00", study), "traits.csv"))
+    
+    # Read extinct shapefile
+    shp_extinct <- list.files(here("data", "case_studies", paste0("CS_00", study), "extinct"),
+                              pattern = "\\.shp$",
+                              full.names = TRUE)
+    extinct <- vect(shp_extinct)
+    
+    # Read in extant shapefile
+    shp_extant <- list.files(here("data", "case_studies", paste0("CS_00", study), "extant"),
+                             pattern = "\\.shp$",
+                             full.names = TRUE, 
+                             recursive = TRUE)
+    extant <- vect(shp_extant)
+  } else {
+    # For 010-099
+    traits <- read.csv(here("data", "case_studies", paste0("CS_0", study), "traits.csv"))
+    
+    # Read extinct shapefile
+    shp_extinct <- list.files(here("data", "case_studies", paste0("CS_0", study), "extinct"),
+                              pattern = "\\.shp$",
+                              full.names = TRUE)
+    extinct <- vect(shp_extinct)
+    
+    # Read in extant shapefile
+    shp_extant <- list.files(here("data", "case_studies", paste0("CS_0", study), "extant"),
+                             pattern = "\\.shp$",
+                             full.names = TRUE, 
+                             recursive = TRUE)
+    extant <- vect(shp_extant)
+  }
   
   # Ensure that there is a column called "sciname" for downstream
   # Replace existing SCI_NAME
@@ -108,6 +89,8 @@ for(study in css_n) {
   
   # Add extinct_species_group column
   PAM_df$extinct_species_group <- extinct$sciname
+  # Make sure that the extinct species names have underscores, not spaces
+  PAM_df$extinct_species_group <- sub(" ", "_", PAM_df$extinct_species_group)
   
   # RESTRUCTURE RESULT DATAFRAME
   # Need:
@@ -149,9 +132,27 @@ for(study in css_n) {
     }
   }
   
-  # Create results directory if it doesn't already exist
-  dir.create(here("results", paste0("cs", study)))
-  # Write final CSV
-  write.csv(PAM_final, here("results", paste0("cs", study), "grid.based.csv"))
+  # Make all column names lowercase
+  colnames(PAM_final) <- tolower(colnames(PAM_final))
+  # Rename latitude and longitude columns
+  colnames(PAM_final)[1] <- "longitude"
+  colnames(PAM_final)[2] <- "latitude"
+  
+  # With new CS naming convention, different numbers of zeros are needed
+  # For 001-009
+  if(study < 10){
+    # Create results directory if it doesn't already exist
+    dir.create(here("results", paste0("CS_00", study)))
+    
+    # Write final CSV
+    write.csv(PAM_final, here("results", paste0("CS_00", study), "grid.based.csv"), row.names = FALSE)
+  } else {
+    # For 010-099
+    # Create results directory if it doesn't already exist
+    dir.create(here("results", paste0("CS_0", study)))
+    
+    # Write final CSV
+    write.csv(PAM_final, here("results", paste0("CS_0", study), "grid.based.csv"), row.names = FALSE)
+  }
   
 }
