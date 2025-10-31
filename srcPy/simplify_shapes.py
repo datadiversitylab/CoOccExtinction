@@ -4,6 +4,7 @@ import geopandas as gpd
 import topojson
 import glob
 import tqdm
+import shapely as sh
 
 eps = .001 # about .1km in lat, variable in lon
 chunksize = 10
@@ -51,10 +52,33 @@ for cwd in ['Birds']:
 
 # just for interactive use
 if False:
+    fname = '/home/vanboxel/proj/CoOccExtinction/data/01_raw/Amphibians/Craugastor omoaensis.gpkg'
+    gdf = gpd.read_file(fname)
+    gdf_simp = gdf.simplify(eps)
+    res = [0.001, 0.01, 0.1, 1]
+    cols = ['orange', 'blue', 'green', 'red']
+    res = [0.001, 0.01]#, 0.1, 1]
+    cols = ['orange', 'blue']#, 'green', 'red']
+
     import matplotlib.pyplot as plt
     plt.ion()
-    for i,o in zip(input_gdf['geometry'][:10], output_gdf['geometry'][:10]):
-        plt.plot(*i.exterior.xy, '.-', alpha=.5)
-        plt.plot(*o.exterior.xy, 'o--', alpha=.8)
-    # TODO: demonstrate how we do this in a figure
 
+    for i in gdf['geometry']:
+        for p in i.geoms:
+            plt.plot(*p.exterior.xy, '.-', alpha=.3, color='gray', label='Original')
+    for eps,c in zip(res,cols):
+        cur_gdf = gdf.simplify(eps)
+        for i in cur_gdf:
+            if isinstance(i, sh.geometry.Polygon):
+                geoms = sh.geometry.MultiPolygon([i])
+            else:
+                geoms = i
+            for p in geoms.geoms:
+                plt.plot(*p.exterior.xy, 'o--', alpha=.5, color=c, label=f'Simplified {eps/0.01:2.1f} km')
+    plt.legend()
+
+    plt.ylabel('Latitude')
+    plt.xlabel('Longitude')
+    plt.title('Simplified ranges of Craugastor omoaensis')
+    plt.tight_layout()
+    plt.savefig('craugastor_omoaensis_simplified.png')
