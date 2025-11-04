@@ -14,7 +14,7 @@ import sys
 base = sys.argv[1]
 mode = sys.argv[2]
 all_sp = sys.argv[3:]
-eps = .01 # about 1km in lat, variable in lon
+eps = .001 # about .1km in lat, variable in lon
 
 cached = True
 
@@ -35,10 +35,10 @@ for cwd in all_sp:
         sp_gdf = gpd.read_file(ex)
         species = set(sp_gdf['sci_name'])
         all_info = []
-        for sp in species:
+        for sp in tqdm.tqdm(species):
             # NB: change sp_gdf to input_gdf for actual run
             #rows = input_gdf[input_gdf['sci_name'] == sp]
-            rows = pd.concat([gpd.read_file(fname, where=f'sci_name = "{sp}"') for fname in input_gdf_names])
+            rows = pd.concat([gpd.read_file(fname, where=f"sci_name='{sp}'") for fname in input_gdf_names])
             # different format for birds
             if cwd == 'Birds':
                 # based on possibly extinct or worse

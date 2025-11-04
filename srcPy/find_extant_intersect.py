@@ -16,6 +16,7 @@ mode = sys.argv[2]
 all_sp = sys.argv[3:]
 eps = .01 # about 1km in lat, variable in lon
 
+simplify = True # change to `False` to turn off polygon simplifying
 cached = True
 
 if mode == 'Community':
@@ -54,12 +55,14 @@ for cwd in all_sp:
             #else:
             #    mask = mask | ints
         os.makedirs(sp_out, exist_ok=True)
-        sp_gdf['geometry'] = sp_gdf.simplify(eps)
+        if simplify:
+            sp_gdf['geometry'] = sp_gdf.simplify(eps)
         sp_gdf.to_file(f'{sp_out}/{sp_name}.shp')
 
         os.makedirs(extant_out, exist_ok=True)
         #extant_shp = input_gdf[mask]
         extant_shp = pd.concat(big_ints)
-        extant_shp['geometry'] = extant_shp.simplify(eps)
+        if simplify:
+            extant_shp['geometry'] = extant_shp.simplify(eps)
         extant_shp.to_file(f'{extant_out}/extant.shp')
 
