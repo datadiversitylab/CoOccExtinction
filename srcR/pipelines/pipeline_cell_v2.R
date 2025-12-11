@@ -85,7 +85,6 @@ lapply(css, function(t_cs){
     has_extinct_species = FALSE,
     extinct_species_count = 0,
     extinct_species_list = NA,
-    in_buffer_zone = FALSE,
     val_df,
     val_df_d
     )
