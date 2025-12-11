@@ -4,6 +4,8 @@ library(dplyr)
 
 css <- list.dirs(here("data", "case_studies"), recursive = FALSE)
 
+print("test")
+
 lapply(css, function(t_cs){
   
   case_study <- basename(t_cs)
@@ -48,9 +50,8 @@ lapply(css, function(t_cs){
   study_area <- full_species
   
   # CREATE GRID CELLS FOR THE ENTIRE AREA
-  ref <- rast(here("data","spatial_data","referecence_grids","global_20k.tif"))
+  ref <- rast(study_area)
   cell_size <- res(ref)  # Need to fix the resolution
-
   # clarified the extents and resolutions
   grid_extent <- ext(study_area)
   grid_cells <- rast(grid_extent, resolution=cell_size)
@@ -105,8 +106,6 @@ lapply(css, function(t_cs){
       
     }
   }
-  plot(grid_cells)
-  write.csv(cell_classification,here("results","cs0","cell_based.csv"))
+  write.csv(cell_classification,here("results",paste0(case_study),"cell_based.csv"))
   })
-
 
