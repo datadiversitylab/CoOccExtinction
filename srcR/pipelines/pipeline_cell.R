@@ -57,7 +57,13 @@ lapply(css, function(t_cs){
   grid_cells <- rast(grid_extent, resolution=cell_size)
   grid_cells <- as.polygons(grid_cells)
   # grid_cells <- crop(grid_cells, study_area) #potentially necessary but very slow for the case study
+  crs(grid_cells)
   
+  #create latitude and longitude based on centroids
+  centroids<-terra::centroids(grid_cells)
+  coords<-terra::crds(centroids)
+  grid_cells$longitude<-coords[,1]
+  grid_cells$latitude<-coords[,2]
   # unique cell IDs
   grid_cells$cell_id <- 1:nrow(grid_cells)
   
@@ -75,16 +81,20 @@ lapply(css, function(t_cs){
   
   val_df_d<-do.call(cbind,raster_vals_d)
   names(val_df_d)<-tools::file_path_sans_ext(basename(rasters_d))
-  print(val_df_d)
+  #print(val_df_d)
+  
 
   # CLASSIFY CELLS BASED ON EXTINCT SPECIES PRESENCE
 
   # Initialize results dataframe
   cell_classification <- data.frame(
     cell_id = grid_cells$cell_id,
+    longitude=grid_cells$longitude,
+    latitude=grid_cells$latitude,
     has_extinct_species = FALSE,
     extinct_species_count = 0,
     extinct_species_list = NA,
+    in_buffer_zone = FALSE,
     val_df,
     val_df_d
     )
