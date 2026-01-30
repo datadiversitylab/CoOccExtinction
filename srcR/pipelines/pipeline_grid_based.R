@@ -9,7 +9,7 @@
 #         (See manuscript for further dataframe contents)
 
 library(here)
-library(letsR)
+library(letsR) #install_github("macroecology/letsR")
 library(terra)
 library(purrr) # For reduce() with rasters
 library(tidyr) # For pivot_longer
@@ -19,7 +19,8 @@ library(tidyr) # For pivot_longer
 
 pipeline_grid_based <- function(case_studies, rasters, traits){
   
-  case_studies <- css_n
+  css_n <- basename(case_studies)
+  
   # For each case study:
   ## Read in extinct and extant shapefiles
   ## Combine the shapes for presab
@@ -28,39 +29,20 @@ pipeline_grid_based <- function(case_studies, rasters, traits){
   for(study in css_n) {
     # Read in the trait dataset
     # With new CS naming convention, different numbers of zeros are needed
-    # For 001-009
-    if(study < 10){
-      traits <- read.csv(here("data", "case_studies", paste0("CS_00", study), "traits.csv"))
-      
+    
       # Read extinct shapefile
-      shp_extinct <- list.files(here("data", "case_studies", paste0("CS_00", study), "extinct"),
+      shp_extinct <- list.files(here("data", "case_studies", study, "extinct"),
                                 pattern = "\\.shp$",
                                 full.names = TRUE)
       extinct <- vect(shp_extinct)
       
       # Read in extant shapefile
-      shp_extant <- list.files(here("data", "case_studies", paste0("CS_00", study), "extant"),
+      shp_extant <- list.files(here("data", "case_studies", study, "extant"),
                                pattern = "\\.shp$",
                                full.names = TRUE, 
                                recursive = TRUE)
       extant <- vect(shp_extant)
-    } else {
-      # For 010-099
-      traits <- read.csv(here("data", "case_studies", paste0("CS_0", study), "traits.csv"))
-      
-      # Read extinct shapefile
-      shp_extinct <- list.files(here("data", "case_studies", paste0("CS_0", study), "extinct"),
-                                pattern = "\\.shp$",
-                                full.names = TRUE)
-      extinct <- vect(shp_extinct)
-      
-      # Read in extant shapefile
-      shp_extant <- list.files(here("data", "case_studies", paste0("CS_0", study), "extant"),
-                               pattern = "\\.shp$",
-                               full.names = TRUE, 
-                               recursive = TRUE)
-      extant <- vect(shp_extant)
-    }
+    
     
     # Ensure that there is a column called "sciname" for downstream
     # Replace existing SCI_NAME
