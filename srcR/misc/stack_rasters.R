@@ -7,7 +7,14 @@
 #       - A single SpatRaster object that combines all of the resampled
 #         rasters included in the spatial data folders
 
-stack_rasters <- function(ref = "global_elevation_worldclim_2.5arcmin") {
+library(here)
+library(terra)
+
+stack_rasters <- function(ref = "global_1k.tif") {
+  
+  #Load the reference grid
+  ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
+  
   # First, read in continuous rasters
   rasters_c <- list.files(here("data", "spatial_data", "raster", "continuous"),
                           full.names = TRUE, 
@@ -27,28 +34,21 @@ stack_rasters <- function(ref = "global_elevation_worldclim_2.5arcmin") {
   # Combine them in one list
   raster_all <- c(raster_list_c, raster_list_d)
   
-  # Make sure rasters can be stacked
-  # Use terra::resample to ensure that all geometries align
-  # Use ref as the baseline
-  ref <- raster_all[[ref]]
-  
-  for(i in c(1:length(raster_all))){
-    # If the layer is continuous, then the resampling method should be "bilinear"
-    # (The continuous rasters are the first n of raster_all, where n is the 
-    #  length of raster_list_c)
-    if(i <= length(raster_list_c)){
-      raster_all[[i]] <- resample(raster_all[[i]], ref, method = "bilinear")
-    } else {
-      # If the layer is discrete, then the resampling method should be "near"
-      raster_all[[i]] <- resample(raster_all[[i]], ref, method = "near")
+  if(ref == "global_1k.tif"){
+    for(i in seq_along(raster_all)){
+      raster_all[[i]] <- resample(raster_all[[i]], ref_r, method = "bilinear")
     }
+  }else{
+    for(i in seq_along(raster_all)  ){
+      traster <- raster_all[[i]]
+      fact <- round(res(ref_r) / res(traster))
+      traster_agg <- aggregate(traster, fact = fact, fun = "mean")
+      traster_agg <- resample(traster_agg, ref_r, method = "near")
+      raster_all[[i]] <- traster_agg
+    }
+    raster_aligned <- rast(raster_all)
   }
-  
-  # Finally, use terra::c() to collapse the transformed raster_all list
-  #  into one SpatRaster for use with lets.addvar()
-  raster_aligned <- reduce(raster_all, c)
-  
+ 
   # Return SpatRaster
   return(raster_aligned)
-  
 }
