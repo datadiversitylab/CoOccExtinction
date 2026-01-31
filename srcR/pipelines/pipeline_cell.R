@@ -2,7 +2,7 @@ library(here)
 library(terra)
 library(dplyr)
 
-pipeline_cell <- function(case_studies, rasters, traits){
+pipeline_cell <- function(case_studies, rasters, traits, ref){
   
   css <- case_studies
   
@@ -56,6 +56,9 @@ pipeline_cell <- function(case_studies, rasters, traits){
 
     val_df<-do.call(cbind,raster_vals)
     colnames(val_df) <- names(rasters)
+    
+    
+    ##CRP: I'm reviewing this component.
     
     # CLASSIFY CELLS BASED ON EXTINCT SPECIES PRESENCE
     

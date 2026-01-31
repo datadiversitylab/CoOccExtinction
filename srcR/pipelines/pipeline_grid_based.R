@@ -17,7 +17,7 @@ library(tidyr) # For pivot_longer
 # List all of the case study directories
 
 
-pipeline_grid_based <- function(case_studies, rasters, traits){
+pipeline_grid_based <- function(case_studies, rasters, traits, ref){
   
   css_n <- basename(case_studies)
   
@@ -57,11 +57,13 @@ pipeline_grid_based <- function(case_studies, rasters, traits){
     all_sp <- rbind(extinct, extant)
     
     # Create PAM object
-    # Resolution is equivalent to 1 degree of latitude and longitude
-    PAM_obj <- lets.presab(all_sp)
+    ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
+    PAM_obj <- rasterize(all_sp, ref_r, field = 1, background = 0)
+    
+    ##CRP: I'm reviewing this component.
     
     # Add aligned raster to incorporate environmental data
-    PAM_env <- lets.addvar(x = PAM_obj, y = raster_aligned)
+    PAM_env <- lets.addvar(x = PAM_obj, y = rasters)
     PAM_df <- as.data.frame(PAM_env)
     
     # Add extinct_species_group column

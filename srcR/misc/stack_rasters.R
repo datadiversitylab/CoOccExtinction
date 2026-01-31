@@ -46,8 +46,9 @@ stack_rasters <- function(ref = "global_1k.tif") {
       traster_agg <- resample(traster_agg, ref_r, method = "near")
       raster_all[[i]] <- traster_agg
     }
-    raster_aligned <- rast(raster_all)
   }
+  
+  raster_aligned <- rast(raster_all)
  
   # Return SpatRaster
   return(raster_aligned)

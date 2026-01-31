@@ -1,3 +1,4 @@
+library(here)
 source(here("srcR", "misc", "stack_rasters.R"))
 source(here("srcR", "pipelines", "pipeline_species_range.R"))
 
@@ -14,5 +15,8 @@ traits <- read.csv(here("data", "traits.csv"))
 
 #Run
 pipeline_species_range(case_studies = case_studies, rasters = rasters, traits = traits)
-pipeline_cell(case_studies = case_studies, rasters = rasters, traits = traits)
-pipeline_grid_based(case_studies = case_studies, rasters = rasters, traits = traits)
+pipeline_cell(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif"))
+pipeline_grid_based(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif"))
+
+
+
