@@ -149,8 +149,7 @@ pipeline_species_range <- function(case_studies, rasters, traits){
     })
     caseStudy <- do.call("rbind", caseStudy)
     
-    dir.create(here("results", case_study))
-    write.csv(caseStudy, here("results", case_study, "range.based.csv"))
+    write.csv(caseStudy, here("results", case_study, ".range.based.csv"))
   })
   
 }

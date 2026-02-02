@@ -63,6 +63,6 @@ pipeline_cell <- function(case_studies, rasters, traits, ref){
         cell_classification$extinct_species_list[i] <- paste(species_in_cell, collapse = ";")
       }
     }
-    write.csv(cell_classification,here("results",paste0(case_study),"cell_based.csv"))
+    write.csv(cell_classification,here("results", case_study, ".cell_based.csv"))
   })
 }

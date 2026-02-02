@@ -151,12 +151,6 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     colnames(PAM_final)[2] <- "longitude"
     colnames(PAM_final)[3] <- "latitude"
     
-    
-    # Create results directory if it doesn't already exist
-    dir.create(here("results", study))
-    
-    # Write final CSV
-    write.csv(PAM_final, here("results", study, "grid.based.csv"), row.names = FALSE)
-    
+    write.csv(PAM_final, here("results", study, ".grid.based.csv"), row.names = FALSE)
   }
 }
