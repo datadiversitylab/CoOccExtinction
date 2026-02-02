@@ -30,18 +30,18 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     # Read in the trait dataset
     # With new CS naming convention, different numbers of zeros are needed
     
-      # Read extinct shapefile
-      shp_extinct <- list.files(here("data", "case_studies", study, "extinct"),
-                                pattern = "\\.shp$",
-                                full.names = TRUE)
-      extinct <- vect(shp_extinct)
-      
-      # Read in extant shapefile
-      shp_extant <- list.files(here("data", "case_studies", study, "extant"),
-                               pattern = "\\.shp$",
-                               full.names = TRUE, 
-                               recursive = TRUE)
-      extant <- vect(shp_extant)
+    # Read extinct shapefile
+    shp_extinct <- list.files(here("data", "case_studies", study, "extinct"),
+                              pattern = "\\.shp$",
+                              full.names = TRUE)
+    extinct <- vect(shp_extinct)
+    
+    # Read in extant shapefile
+    shp_extant <- list.files(here("data", "case_studies", study, "extant"),
+                             pattern = "\\.shp$",
+                             full.names = TRUE, 
+                             recursive = TRUE)
+    extant <- vect(shp_extant)
     
     
     # Ensure that there is a column called "sciname" for downstream
@@ -58,13 +58,27 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     
     # Create PAM object
     ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
-    PAM_obj <- rasterize(all_sp, ref_r, field = 1, background = 0)
+    species_list <- unique(all_sp$sciname)
+    pam_layers <- lapply(species_list, function(sp) {
+      sp_polygon <- all_sp[all_sp$sciname == sp, ]
+      rasterize(sp_polygon, ref_r, field = 1, background = 0)
+    })
+    PAM_raster <- rast(pam_layers)
+    names(PAM_raster) <- species_list
+    richness <- sum(PAM_raster)
+    occupied_cells <- which(values(richness, mat = FALSE) > 0)
+    PAM_matrix <- PAM_raster[occupied_cells]
     
-    ##CRP: I'm reviewing this component.
-    
-    # Add aligned raster to incorporate environmental data
-    PAM_env <- lets.addvar(x = PAM_obj, y = rasters)
-    PAM_df <- as.data.frame(PAM_env)
+    #Add environmental data
+    coords <- xyFromCell(richness, occupied_cells)
+    extracted_values <- terra::extract(rasters, coords)
+    PAM_df <- data.frame(
+      cell_id = occupied_cells,
+      lon = coords[, 1],
+      lat = coords[, 2],
+      PAM_matrix,
+      extracted_values
+    )
     
     # Add extinct_species_group column
     PAM_df$extinct_species_group <- extinct$sciname
@@ -79,19 +93,39 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     # First, identify species columns
     names <- all_sp$sciname
     unique_names <- unique(all_sp$sciname)
-    species_cols <- names(PAM_df)[3:(length(unique_names)+2)]
+    species_cols <- names(PAM_df)[4:(length(unique_names)+3)]
     
     # Need to pivot to long format: each species occurrence is associated with
     #  a lat/lon pair and its appropriate environmental variables
     # The cols argument needs "all_of()" to make it a tidyselect object
-    PAM_long <- pivot_longer(data = PAM_df, cols = all_of(species_cols), 
-                             names_to = "binomial_name", values_to = "Presence")
+    #PAM_long <- pivot_longer(data = PAM_df, cols = all_of(species_cols), 
+    #                         names_to = "binomial_name", values_to = "Presence")
     
-    # Should we only include rows with a presence?
-    PAM_final <- PAM_long[which(PAM_long$Presence == 1),]
+    
+    # Identify non-species columns (everything except species_cols)
+    id_cols <- setdiff(names(PAM_df), species_cols)
+    
+    # Create list of presence records only
+    presence_list <- list()
+    
+    for(sp in species_cols) {
+      present_cells <- which(PAM_df[[sp]] == 1)
+      
+      if(length(present_cells) > 0) {
+        presence_list[[sp]] <- data.frame(
+          PAM_df[present_cells, id_cols],  # All non-species columns
+          binomial_name = sp,
+          Presence = 1
+        )
+      }
+    }
+    
+    # Combine all
+    PAM_long <- do.call(rbind, presence_list)
+    rownames(PAM_long) <- NULL
     
     # In order to add traits, the binomial_name column needs to include underscores
-    PAM_final$binomial_name <- sub(" ", "_", PAM_final$binomial_name)
+    PAM_final$binomial_name <- sub(".", "_", PAM_final$binomial_name, fixed = TRUE)
     
     # Include empty columns for trait names
     trait_names <- colnames(traits)[6:length(colnames(traits))]
@@ -114,25 +148,15 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     # Make all column names lowercase
     colnames(PAM_final) <- tolower(colnames(PAM_final))
     # Rename latitude and longitude columns
-    colnames(PAM_final)[1] <- "longitude"
-    colnames(PAM_final)[2] <- "latitude"
+    colnames(PAM_final)[2] <- "longitude"
+    colnames(PAM_final)[3] <- "latitude"
     
-    # With new CS naming convention, different numbers of zeros are needed
-    # For 001-009
-    if(study < 10){
-      # Create results directory if it doesn't already exist
-      dir.create(here("results", paste0("CS_00", study)))
-      
-      # Write final CSV
-      write.csv(PAM_final, here("results", paste0("CS_00", study), "grid.based.csv"), row.names = FALSE)
-    } else {
-      # For 010-099
-      # Create results directory if it doesn't already exist
-      dir.create(here("results", paste0("CS_0", study)))
-      
-      # Write final CSV
-      write.csv(PAM_final, here("results", paste0("CS_0", study), "grid.based.csv"), row.names = FALSE)
-    }
+    
+    # Create results directory if it doesn't already exist
+    dir.create(here("results", study))
+    
+    # Write final CSV
+    write.csv(PAM_final, here("results", study, "grid.based.csv"), row.names = FALSE)
     
   }
 }

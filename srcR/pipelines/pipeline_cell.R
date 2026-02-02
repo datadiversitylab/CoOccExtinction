@@ -32,7 +32,16 @@ pipeline_cell <- function(case_studies, rasters, traits, ref){
     study_area <- full_species
     
     # CREATE GRID CELLS FOR THE ENTIRE AREA
-    ref <- rast(study_area)
+    ref_study <- rast(study_area)
+    ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
+    
+    #Get the cells in the ref raster that are in the study area
+    grid_cells <- #
+      
+    #Extract raster data
+    val_df <- #
+    
+    
     cell_size <- res(ref)  # Need to fix the resolution
     # clarified the extents and resolutions
     grid_extent <- ext(study_area)

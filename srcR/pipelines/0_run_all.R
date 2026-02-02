@@ -14,8 +14,8 @@ traits <- read.csv(here("data", "traits.csv"))
 # [TBD]
 
 #Run
-pipeline_species_range(case_studies = case_studies, rasters = rasters, traits = traits)
-pipeline_cell(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif"))
+pipeline_species_range(case_studies = case_studies, rasters = rasters, traits = traits) #Ok
+pipeline_cell(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif")) #Ok
 pipeline_grid_based(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif"))
 
 
