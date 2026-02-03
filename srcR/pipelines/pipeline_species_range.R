@@ -4,17 +4,17 @@ library(dplyr)
 
 pipeline_species_range <- function(case_studies, rasters, traits){
   
-  css <- case_studies
+  css <- basename(case_studies)
   
-  lapply(css, function(t_cs){
+  for(t_cs in css){
     
     # Read in shapefiles
-    shp_extinct <- list.files(here("data", "case_studies", case_study, "extinct"),
+    shp_extinct <- list.files(here("data", "case_studies", t_cs, "extinct"),
                               pattern = "\\.shp$",
                               full.names = TRUE)
     extinct <- vect(shp_extinct)
     
-    shp_extant <- list.files(here("data", "case_studies", case_study, "extant"),
+    shp_extant <- list.files(here("data", "case_studies", t_cs, "extant"),
                              pattern = "\\.shp$",
                              full.names = TRUE, 
                              recursive = TRUE)
@@ -112,7 +112,7 @@ pipeline_species_range <- function(case_studies, rasters, traits){
       # 6. COMPILE RESULTS
       # Remember: is_extinct is from the "extant" column in traits.csv
       result <- data.frame(
-        case_study = case_study,
+        case_study = t_cs,
         extinct_species_group = sub(" ", "_", extinct$SCI_NAME),
         extant = is_extinct,
         species_name = species_name,
@@ -135,7 +135,7 @@ pipeline_species_range <- function(case_studies, rasters, traits){
     })
     caseStudy <- do.call("rbind", caseStudy)
     
-    write.csv(caseStudy, here("results", paste0(case_study, ".range.based.csv")))
-  })
+    write.csv(caseStudy, here("results", paste0(t_cs, ".range.based.csv")))
+  }
   
 }

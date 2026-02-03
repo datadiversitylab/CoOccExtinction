@@ -4,11 +4,11 @@ library(dplyr)
 
 pipeline_cell <- function(case_studies, rasters, traits, ref){
   
-  css <- case_studies
+  css <- basename(case_studies)
   
-  lapply(css, function(t_cs){
+  for(t_cs in css){
     
-    case_study <- basename(t_cs)
+    case_study <- t_cs
     
     # Read in shapefiles
     shp_extinct <- list.files(here("data", "case_studies", case_study, "extinct"),
@@ -44,10 +44,16 @@ pipeline_cell <- function(case_studies, rasters, traits, ref){
       extracted_values, 
       richness = extracted_values_richness[,1]
     )
-
+    
+    #Cell classification
     occupied_cells_ext <- which(values(study_area_r_ex, mat = FALSE) > 0)
     cell_classification$has_extinct_species <- ifelse(cell_classification$cell_id %in% occupied_cells_ext, TRUE, FALSE)
     
+    #Fraction occupied by extinct species
+    extinct_coverage <- rasterize(extinct, ref_r_study_area, cover = TRUE, background = 0)
+    coverage_values <- terra::extract(extinct_coverage, coords)
+    cell_classification$pct_overlap_ext <- coverage_values[, 1]
+
     write.csv(cell_classification,here("results", paste0(case_study, ".cell_based.", ref, ".csv")))
-  })
+  }
 }

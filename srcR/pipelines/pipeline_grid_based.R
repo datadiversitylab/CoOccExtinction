@@ -9,10 +9,8 @@
 #         (See manuscript for further dataframe contents)
 
 library(here)
-library(letsR) #install_github("macroecology/letsR")
 library(terra)
-library(purrr) # For reduce() with rasters
-library(tidyr) # For pivot_longer
+library(data.table)
 
 # List all of the case study directories
 
@@ -125,32 +123,12 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     rownames(PAM_long) <- NULL
     
     # In order to add traits, the binomial_name column needs to include underscores
-    PAM_final$binomial_name <- sub(".", "_", PAM_final$binomial_name, fixed = TRUE)
+    PAM_long$binomial_name <- sub(".", "_", PAM_long$binomial_name, fixed = TRUE)
+
+    setDT(PAM_long)
+    setDT(traits)
+    PAM_final <- traits[PAM_long, on = .(species = binomial_name)]
     
-    # Include empty columns for trait names
-    trait_names <- colnames(traits)[6:length(colnames(traits))]
-    for(name in trait_names){
-      PAM_final[,name] <- NA
-    }
-    
-    # Populate trait columns for each row
-    for(i in c(1:nrow(PAM_final))){
-      # Get trait row for the species in the current PAM_final row
-      trait_row <- traits[which(traits$species == PAM_final$binomial_name[i]),]
-      
-      # Only add trait data if it exists
-      if(nrow(trait_row) > 0){
-        # Add those traits to the PAM_final row
-        PAM_final[i, trait_names] <- trait_row[, trait_names]
-      }
-    }
-    
-    # Make all column names lowercase
-    colnames(PAM_final) <- tolower(colnames(PAM_final))
-    # Rename latitude and longitude columns
-    colnames(PAM_final)[2] <- "longitude"
-    colnames(PAM_final)[3] <- "latitude"
-    
-    write.csv(PAM_final, here("results", paste0(case_study, ".grid.based.", ref, ".csv")), row.names = FALSE)
+    write.csv(PAM_final, here("results", paste0(study, ".grid.based.", ref, ".csv")), row.names = FALSE)
   }
 }
