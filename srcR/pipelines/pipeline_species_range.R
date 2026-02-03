@@ -7,17 +7,6 @@ pipeline_species_range <- function(case_studies, rasters, traits){
   css <- case_studies
   
   lapply(css, function(t_cs){
-    # Find the current study's numeric identifier
-    css_n <- as.numeric(gsub("\\D", "", t_cs))
-    
-    # It doesn't follow our case study naming convention, so fix it
-    if(css_n < 10){
-      # If the number is less than 10, it needs two zeroes
-      case_study <- paste0("CS_00", css_n)
-    } else {
-      # If the number is greater than 10, it needs one zero
-      case_study <- paste0("CS_0", css_n)
-    }
     
     # Read in shapefiles
     shp_extinct <- list.files(here("data", "case_studies", case_study, "extinct"),
@@ -32,10 +21,10 @@ pipeline_species_range <- function(case_studies, rasters, traits){
     extant <- vect(shp_extant)
     
 
-    # Construct dataset
+    # Build dataset
     full_species <- rbind(extant, extinct)
     caseStudy <- lapply(1:nrow(full_species), function(sp){
-
+      
       # Target sp is an extant species SpatVector
       target_sp <- full_species[sp]
       
@@ -43,13 +32,11 @@ pipeline_species_range <- function(case_studies, rasters, traits){
       extinct_sp <- full_species[length(full_species)]
       
       # Grab the current species name from the SpatVector
-      species_name <- sub(" ", "_",  full_species[sp]$sci_name[1])    
+      species_name <- full_species[sp]$sci_name[1] 
       
       # If species_name is na, then it's probably an extinct species
       #  (the scientific name is stored differently in those SpatVectors)
-      if(is.na(species_name)){species_name =  sub(" ", "_", extinct$SCI_NAME)}
-      
-      print(paste("species_name is:", species_name))
+      if(is.na(species_name)){species_name =  extinct$SCI_NAME}
       
       # 2. TRAITS (from traits CSV)
       trait_row <- traits %>% filter(species == species_name)
@@ -74,7 +61,7 @@ pipeline_species_range <- function(case_studies, rasters, traits){
         vals <- values(rasters[[y]], mat = FALSE, na.rm = TRUE)
         is_cont <- any(vals != round(vals), na.rm = TRUE)
         if( is_cont ){
-          val <- mean(extract(rasters[[y]], target_sp, fun = "mean", na.rm = TRUE)[, 2])
+          val <- mean(terra::extract(rasters[[y]], target_sp, fun = "mean", na.rm = TRUE)[, 2])
           names(val) <- names(rasters)[y]
           val
         }else{
@@ -96,10 +83,9 @@ pipeline_species_range <- function(case_studies, rasters, traits){
       
       # 5. CALCULATE OVERLAP WITH EXTINCT SPECIES
       # traits.csv actually just has an "extant" column, where 0 is extinct
-      is_extinct <- as.numeric(trait_row$extant[1])
-      print(paste("The value of the extant column is:", is_extinct))    
-      
-      if (is_extinct == 0) {
+      is_extinct <-  sp == nrow(full_species)
+
+      if (is_extinct == TRUE) {
         # Extinct species overlaps 100% with itself
         overlap_area_km2 <- global_range_size_km2
         overlap_pct_extinct_range <- 100.0
@@ -130,8 +116,7 @@ pipeline_species_range <- function(case_studies, rasters, traits){
         extinct_species_group = sub(" ", "_", extinct$SCI_NAME),
         extant = is_extinct,
         species_name = species_name,
-        
-        # Traits
+
         trait_row,
         
         # Range
@@ -139,17 +124,18 @@ pipeline_species_range <- function(case_studies, rasters, traits){
         global_range_size_log = global_range_size_log,
         range_centroid_lon = mean(range_centroid_lon),
         range_centroid_lat = mean(range_centroid_lat),
-        raster_vals,
+        raster_values,
         overlap_area_km2 = overlap_area_km2,
         overlap_pct_extinct_range = overlap_pct_extinct_range,
         overlap_pct_extant_range = overlap_pct_extant_range,
         stringsAsFactors = FALSE
       )
+      
       return(result)
     })
     caseStudy <- do.call("rbind", caseStudy)
     
-    write.csv(caseStudy, here("results", case_study, ".range.based.csv"))
+    write.csv(caseStudy, here("results", paste0(case_study, ".range.based.csv")))
   })
   
 }

@@ -151,6 +151,6 @@ pipeline_grid_based <- function(case_studies, rasters, traits, ref){
     colnames(PAM_final)[2] <- "longitude"
     colnames(PAM_final)[3] <- "latitude"
     
-    write.csv(PAM_final, here("results", study, ".grid.based.csv"), row.names = FALSE)
+    write.csv(PAM_final, here("results", paste0(case_study, ".grid.based.", ref, ".csv")), row.names = FALSE)
   }
 }

@@ -29,40 +29,25 @@ pipeline_cell <- function(case_studies, rasters, traits, ref){
     ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
     ref_r_study_area <- crop(ref_r, study_area)
     study_area_r <- rasterize(study_area, ref_r_study_area, field = 1, background = 0)
+    study_area_richness <- rasterize(study_area, ref_r_study_area, background = 0, fun = "sum")
+    study_area_r_ex <- rasterize(extinct, study_area_r, field = 1, background = 0, touches = TRUE)
     
     #Extract raster data
     occupied_cells <- which(values(study_area_r, mat = FALSE) > 0)
     coords <- xyFromCell(study_area_r, occupied_cells)
     extracted_values <- terra::extract(rasters, coords)
+    extracted_values_richness <- terra::extract(study_area_richness, coords)
     cell_classification <- data.frame(
       cell_id = occupied_cells,
       lon = coords[, 1],
       lat = coords[, 2],
-      extracted_values
+      extracted_values, 
+      richness = extracted_values_richness[,1]
     )
-  
-    # CLASSIFY CELLS BASED ON EXTINCT SPECIES PRESENCE
-    all_points <- vect(cell_classification[, c("lon", "lat")], 
-                       geom = c("lon", "lat"),
-                       crs = crs(extinct))
+
+    occupied_cells_ext <- which(values(study_area_r_ex, mat = FALSE) > 0)
+    cell_classification$has_extinct_species <- ifelse(cell_classification$cell_id %in% occupied_cells_ext, TRUE, FALSE)
     
-    # Extract which extinct polygons each point intersects
-    intersections <- relate(all_points, extinct, "intersects")
-    
-    # Initialize columns
-    cell_classification$has_extinct_species <- FALSE
-    cell_classification$extinct_species_count <- 0
-    cell_classification$extinct_species_list <- ""
-    
-    # Process only cells that intersect
-    for(i in 1:nrow(cell_classification)) {
-      if(any(intersections[i, ])) {
-        species_in_cell <- extinct$SCI_NAME[intersections[i, ]]
-        cell_classification$has_extinct_species[i] <- TRUE
-        cell_classification$extinct_species_count[i] <- length(species_in_cell)
-        cell_classification$extinct_species_list[i] <- paste(species_in_cell, collapse = ";")
-      }
-    }
-    write.csv(cell_classification,here("results", case_study, ".cell_based.csv"))
+    write.csv(cell_classification,here("results", paste0(case_study, ".cell_based.", ref, ".csv")))
   })
 }
