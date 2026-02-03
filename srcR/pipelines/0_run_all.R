@@ -18,7 +18,7 @@ match_traits_shp(traits = traits)
 
 #Run pipelines
 pipeline_species_range(case_studies = case_studies, rasters = rasters, traits = traits) #range
-pipeline_cell(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif")) #cell
+pipeline_cell(case_studies = case_studies, rasters = rasters, ref = paste0("global_", res,".tif")) #cell
 pipeline_grid_based(case_studies = case_studies, rasters = rasters, traits = traits, ref = paste0("global_", res,".tif")) #cell x species
 
 

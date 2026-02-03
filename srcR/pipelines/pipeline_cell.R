@@ -2,7 +2,7 @@ library(here)
 library(terra)
 library(dplyr)
 
-pipeline_cell <- function(case_studies, rasters, traits, ref){
+pipeline_cell <- function(case_studies, rasters, ref){
   
   css <- basename(case_studies)
   
