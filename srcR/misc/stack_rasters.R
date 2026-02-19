@@ -16,24 +16,16 @@ stack_rasters <- function(ref = "global_1k.tif") {
   ref_r <- rast(here("data", "spatial_data", "reference_grids", ref))
   
   # First, read in continuous rasters
-  rasters_c <- list.files(here("data", "spatial_data", "raster", "continuous"),
+  raster_all_n <- list.files(here("data", "spatial_data", "raster"),
                           full.names = TRUE, 
                           recursive = TRUE)
-  raster_list_c <- lapply(rasters_c, rast)
-  # Apply file names to list
-  names(raster_list_c) <- tools::file_path_sans_ext(basename(rasters_c))
+  raster_all <- lapply(raster_all_n, rast)
   
-  # Next, read in discrete rasters
-  rasters_d <- list.files(here("data", "spatial_data", "raster", "discrete"),
-                          full.names = TRUE, 
-                          recursive = TRUE)
-  raster_list_d <- lapply(rasters_d, rast)
   # Apply file names to list
-  names(raster_list_d) <- tools::file_path_sans_ext(basename(rasters_d))
+  names(raster_all) <- tools::file_path_sans_ext(basename(raster_all_n))
   
   # Combine them in one list
-  raster_all <- c(raster_list_c, raster_list_d)
-  
+
   if(ref == "global_1k.tif"){
     for(i in seq_along(raster_all)){
       raster_all[[i]] <- resample(raster_all[[i]], ref_r, method = "bilinear")
